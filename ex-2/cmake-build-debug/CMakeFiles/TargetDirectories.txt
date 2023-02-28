@@ -1,0 +1,3 @@
+/home/x0lotl/Documents/GitHub/ukma_algorithm/ex-2/cmake-build-debug/CMakeFiles/ex_2.dir
+/home/x0lotl/Documents/GitHub/ukma_algorithm/ex-2/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/x0lotl/Documents/GitHub/ukma_algorithm/ex-2/cmake-build-debug/CMakeFiles/rebuild_cache.dir
