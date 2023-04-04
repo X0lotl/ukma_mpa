@@ -17,7 +17,7 @@ class Element {
   }
 }
 
-public class Main{
+public class Main {
 
   public static void main(String[] args) throws FileNotFoundException {
     File inputFile = new File("input.txt");
@@ -41,51 +41,68 @@ public class Main{
 
     scanner.close();
 
-    List<List<Integer>> configurations = new ArrayList<>();
-    generateConfigurations(configurations, new ArrayList<>(), K, N);
-
-    double maxReliability = 0.0;
     List<Integer> bestConfiguration = new ArrayList<>();
+    int[] configurationCounter = new int[1];
+    double[] maxReliability = new double[1];
+    int[] bestConfigurationIndex = new int[1];
 
-    for (List<Integer> configuration : configurations) {
-      double reliability = calculateReliability(configuration, elements, k1, k2, k3);
-      if (reliability > maxReliability) {
-        maxReliability = reliability;
-        bestConfiguration = configuration;
-      }
-    }
+    generateConfigurations(bestConfiguration, new ArrayList<>(), elements, K, N, k1, k2, k3, maxReliability, configurationCounter, bestConfigurationIndex, 0);
 
     System.out.println("Задана структура: " + k1 + " " + k2 + " " + k3);
     System.out.println("Кількість різнотипних елементів: " + K);
-    System.out.println("Кількість різних конфігурацій: " + configurations.size());
-    System.out.println("Максимальна надійність: " + maxReliability);
-    System.out.print("Конфігурація з максимальною надійністю: ");
-    for (int i : bestConfiguration) {
-      System.out.print(i + " ");
-    }
+    System.out.println("Кількість різних конфігурацій: " + configurationCounter[0]);
+    System.out.println("Максимальна надійність: " + maxReliability[0]);
+    System.out.println("Конфігурація з максимальною надійністю (номер конфігурації): " + bestConfigurationIndex[0]);
 
     PrintWriter outputFile = new PrintWriter("output.txt");
     outputFile.println("Задана структура: " + k1 + " " + k2 + " " + k3);
     outputFile.println("Кількість різнотипних елементів: " + K);
-    outputFile.println("Кількість різних конфігурацій: " + configurations.size());
-    outputFile.println("Максимальна надійність: " + maxReliability);
-    outputFile.print("Конфігурація з максимальною надійністю: ");
-    for (int i : bestConfiguration) {
-      outputFile.print(i + " ");
-    }
+    outputFile.println("Кількість різних конфігурацій: " + configurationCounter[0]);
+    outputFile.println("Максимальна надійність: " + maxReliability[0]);
+    outputFile.println("Конфігурація з максимальною надійністю (номер конфігурації): " + bestConfigurationIndex[0]);
     outputFile.close();
   }
 
-  private static void generateConfigurations(List<List<Integer>> configurations, List<Integer> current, int K, int N) {
+  private static void generateConfigurations(List<Integer> bestConfiguration, List<Integer> current, List<Element> elements, int K, int N, int k1, int k2, int k3, double[] maxReliability, int[] configurationCounter, int[] bestConfigurationIndex, int currentConfigurationIndex) {
     if (current.size() == N) {
-      configurations.add(new ArrayList<>(current));
+      configurationCounter[0]++;
+      double reliability = calculateReliability(current, elements, k1, k2, k3);
+      if (reliability > maxReliability[0]) {
+        maxReliability[0] = reliability;
+        bestConfigurationIndex[0] = currentConfigurationIndex;
+        bestConfiguration.clear();
+        bestConfiguration.addAll(current);
+      }
       return;
     }
 
     for (int i = 1; i <= K; i++) {
       current.add(i);
-      generateConfigurations(configurations, current, K, N);
+      generateConfigurations(bestConfiguration, current, elements, K, N, k1, k2, k3, maxReliability, configurationCounter, bestConfigurationIndex, currentConfigurationIndex + 1);
       current.remove(current.size() - 1);
     }
   }
+
+  private static double calculateReliability(List<Integer> configuration, List<Element> elements, int k1, int k2, int k3) {
+    double R1 = 1.0;
+    double R2 = 1.0;
+    double R3 = 1.0;
+
+    for (int i = 0; i < k1; i++) {
+      int elementType = configuration.get(i);
+      R1 *= (1 - elements.get(elementType - 1).Qkz);
+    }
+
+    for (int i = k1; i < k1 + k2; i++) {
+      int elementType = configuration.get(i);
+      R2 *= (1 - elements.get(elementType - 1).Qoj);
+    }
+    for (int i = k1 + k2; i < k1 + k2 + k3; i++) {
+      int elementType = configuration.get(i);
+      R3 *= (1 - elements.get(elementType - 1).Qoj);
+    }
+
+    return R1 * R2 * R3;
+  }
 }
+
