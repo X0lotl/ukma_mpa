@@ -1,9 +1,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 class Element {
   int type;
@@ -42,7 +40,7 @@ public class Kho {
     scanner.close();
 
     List<List<Integer>> configurations = new ArrayList<>();
-    configurations = generateConfigurations(K, N);
+    configurations = generateConfigurations(K, N, k1, k2, k3);
     double maxReliability = 0.0;
     List<Integer> bestConfiguration = new ArrayList<>();
     for (int i = 0; i < configurations.size(); i++) {
@@ -82,8 +80,9 @@ public class Kho {
     outputFile.close();
     }
 
-  private static List<List<Integer>> generateConfigurations(int K, int N) {
+  private static List<List<Integer>> generateConfigurations(int K, int N, int k1, int k2, int k3) {
     List<List<Integer>> configurations = new ArrayList<>();
+    Set<Long> hashes = new HashSet<>();
 
     List<Integer> current = new ArrayList<>();
     for (int i = 0; i < N; i++) {
@@ -91,7 +90,17 @@ public class Kho {
     }
 
     while (true) {
-      configurations.add(new ArrayList<>(current));
+      long hash = getConfigurationHash( current, k1, k2, k3);
+      if (!hashes.contains(hash)) {
+        configurations.add(new ArrayList<>(current));
+
+        if (configurations.size() >= 70000) {
+          System.out.println(configurations.size());
+          break;
+        }
+
+        hashes.add(hash);
+      }
 
       int index = N - 1;
       while (index >= 0 && current.get(index) == K) {
@@ -109,6 +118,41 @@ public class Kho {
     }
 
     return configurations;
+  }
+
+
+  public static long getConfigurationHash(List<Integer> configuration, int k1, int k2, int k3) {
+    int mul1 = 1, mul2 = 1, mul3 = 1;
+    int sum1 = 1, sum2 = 1, sum3 = 1;
+    int powSum1 = 1, powSum2 = 1, powSum3 = 1;
+    int i = 0;
+
+    for (; i < k1; i++) {
+      mul1 *= configuration.get(i) + 1;
+      sum1 += configuration.get(i) + 1;
+      powSum1 *= ((configuration.get(i) + 1) * (configuration.get(i) + 1));
+    }
+
+    for (; i < k1 + k2; i++) {
+      mul2 *= configuration.get(i) + 1;
+      sum2 += configuration.get(i) + 1;
+      powSum2 *= ((configuration.get(i) + 1) * (configuration.get(i) + 1));
+    }
+
+    for (; i < k1 + k2 + k3; i++) {
+      mul3 *= configuration.get(i) + 1;
+      sum3 += configuration.get(i) + 1;
+      powSum3 *= ((configuration.get(i) + 1) * (configuration.get(i) + 1));
+    }
+
+    long doubleHash = cantor((mul1 * sum1) + powSum1 + mul1, (mul2 * sum2) + powSum2 + mul2);
+    long tripleHash = cantor(doubleHash, (mul3 * sum3) + powSum3 + mul3);
+
+    return tripleHash;
+  }
+
+  public static long cantor(long a, long b) {
+    return ((a + b) * (a + b + 1) + b) / 2;
   }
 
   private static double calculateReliability(List<Integer> configuration, List<Element> elements, int k1, int k2, int k3) {
