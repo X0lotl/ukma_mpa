@@ -45,14 +45,12 @@ public class Kho {
     configurations = generateConfigurations(K, N);
     double maxReliability = 0.0;
     List<Integer> bestConfiguration = new ArrayList<>();
-    int bestConfigurationIndex = 0;
     for (int i = 0; i < configurations.size(); i++) {
       List<Integer> configuration = configurations.get(i);
       double reliability = calculateReliability(configuration, elements, k1, k2, k3);
       if (reliability > maxReliability) {
         maxReliability = reliability;
         bestConfiguration = configuration;
-        bestConfigurationIndex = i;
       }
     }
 
@@ -74,8 +72,7 @@ public class Kho {
     outputFile.println("Кількість різнотипних елементів: " + K);
     outputFile.println("Кількість різних конфігурацій: " + configurations.size());
     outputFile.println("Максимальна надійність: " + maxReliability);
-    outputFile.print("Конфігурація з максимальною надійністю: ");
-    outputFile.println();
+    outputFile.println("Конфігурація з максимальною надійністю: ");
     for (int i = 0; i < bestConfiguration.size(); i++) {
       outputFile.print(bestConfiguration.get(i) + " ");
       if (i == k1 - 1 || i == k1 + k2 - 1) {
