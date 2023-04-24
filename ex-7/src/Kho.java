@@ -81,8 +81,7 @@ public class Kho {
     }
 
   private static List<List<Integer>> generateConfigurations(int K, int N, int k1, int k2, int k3) {
-    List<List<Integer>> configurations = new ArrayList<>();
-    Set<Long> hashes = new HashSet<>();
+    Set<List<Integer>> uniqueConfigurations = new HashSet<>();
 
     List<Integer> current = new ArrayList<>();
     for (int i = 0; i < N; i++) {
@@ -90,16 +89,15 @@ public class Kho {
     }
 
     while (true) {
-      long hash = getConfigurationHash( current, k1, k2, k3);
-      if (!hashes.contains(hash)) {
-        configurations.add(new ArrayList<>(current));
 
-        if (configurations.size() >= 70000) {
-          System.out.println(configurations.size());
-          break;
-        }
+      if (uniqueConfigurations.size() % 100 == 0) {
+        System.out.println(uniqueConfigurations.size());
+      }
 
-        hashes.add(hash);
+      List<Integer> sortedCurrent = new ArrayList<>(current);
+      sortedCurrent.sort(null);
+      if (!uniqueConfigurations.contains(sortedCurrent)) {
+        uniqueConfigurations.add(sortedCurrent);
       }
 
       int index = N - 1;
@@ -117,7 +115,7 @@ public class Kho {
       }
     }
 
-    return configurations;
+    return new ArrayList<>(uniqueConfigurations);
   }
 
 
@@ -156,26 +154,29 @@ public class Kho {
   }
 
   private static double calculateReliability(List<Integer> configuration, List<Element> elements, int k1, int k2, int k3) {
-    double R1 = 1.0;
-    double R2 = 1.0;
-    double R3 = 1.0;
+    double p1 = 1.0;
+    int l = 0;
 
     for (int i = 0; i < k1; i++) {
-      int elementType = configuration.get(i);
-      R1 *= (1 - elements.get(elementType - 1).Qkz);
+      int elementType = configuration.get(l++);
+      p1 *= 1 - elements.get(elementType - 1).Qkz;
     }
 
-    for (int i = k1; i < k1 + k2; i++) {
-      int elementType = configuration.get(i);
-      R2 *= (1 - elements.get(elementType - 1).Qoj);
+    double p2 = 1.0;
+
+    for (int i = 0; i < k2; i++) {
+      double product = 1.0;
+      for (int j = 0; j < k3; j++) {
+        if (l < configuration.size()) {
+          int elementType = configuration.get(l++);
+          product *= elements.get(elementType - 1).Qoj;
+        }
+      }
+      p2 *= 1 - product;
     }
 
-    for (int i = k1 + k2; i < k1 + k2 + k3; i++) {
-      int elementType = configuration.get(i);
-      R3 *= (1 - elements.get(elementType - 1).Qoj);
-    }
-
-    return R1 * R2 * R3;
+    return p1 * (1 - p2);
   }
+
 
 }
